@@ -1,76 +1,87 @@
-const express = require('express');
-const cors = require('cors');
-const { resolve } = require('path');
+const express = require("express");
+const cors = require("cors");
 
 const app = express();
-app.use(cors())
-const port = 3010;
+app.use(cors());
+app.use(express.static("static"));
+const port = 3000;
 
-let taxRate = 5;
-let discountPercentage = 10;
-let loyalityRate = 2;
+let taxRate = 5; // 5% tax rate
+let discountPercentage = 10; // 10% discount
+let loyaltyRate = 2; // Loyalty points multiplier
 
-
-app.get('/cart-total', (req, res) => {
+app.get("/cart-total", (req, res) => {
   const newItemPrice = parseFloat(req.query.newItemPrice);
   const cartTotal = parseFloat(req.query.cartTotal);
-  res.send(newItemPrice)
+
+  res.send((newItemPrice + cartTotal).toString()); // Ensure it is a string
 });
 
-app.get('/membership-discount', (req, res) => {
+app.get("/membership-discount", (req, res) => {
   const cartTotal = parseFloat(req.query.cartTotal);
-  const isMember = req.query.isMember;
-  let result;
-  if (isMember === 'true'){
-    result =  (cartTotal * .9).toString();
-  }else{
-    result = (cartTotal).toString();
+  const isMember = req.query.isMember === "true"; // Boolean conversion
+
+  if (isNaN(cartTotal)) {
+    return res.status(400).send("Invalid cart total");
   }
-  res.send(result)
+
+  const result = isMember ? cartTotal * 0.9 : cartTotal;
+  res.send(result.toString());
 });
 
-
-app.get('/calculate-tax', (req, res) => {
+app.get("/calculate-tax", (req, res) => {
   const cartTotal = parseFloat(req.query.cartTotal);
-  let  result  = (cartTotal * .05).toString();
-  res.send(result)
+
+  if (isNaN(cartTotal)) {
+    return res.status(400).send("Invalid cart total");
+  }
+
+  const result = cartTotal * (taxRate / 100); // Use taxRate variable
+  res.send(result.toString()); // Send as string
 });
 
-
-app.get('/estimate-delivery', (req, res) => {
+app.get("/estimate-delivery", (req, res) => {
   const shippingMethod = req.query.shippingMethod;
   const distance = parseFloat(req.query.distance);
-  let output;
-  if (shippingMethod === 'Standard'){
-    output = (distance / 50).toString();
-  }else if(shippingMethod === 'Express'){
-    output=  (distance / 100).toString();
+
+  if (isNaN(distance)) {
+    return res.status(400).send("Invalid distance");
   }
-  res.send(output)
+
+  let output;
+  if (shippingMethod === "standard") {
+    output = distance / 50;
+  } else if (shippingMethod === "express") {
+    output = distance / 100;
+  } else {
+    return res.status(400).send("Invalid shipping method");
+  }
+
+  res.send(output.toString()); // Ensure it is a string
 });
 
-
-app.get('/shipping-cost', (req, res) => {
+app.get("/shipping-cost", (req, res) => {
   const weight = parseFloat(req.query.weight);
   const distance = parseFloat(req.query.distance);
-  let output = weight * distance * 0.1;
-  res.send(output)
+
+  if (isNaN(weight) || isNaN(distance)) {
+    return res.status(400).send("Invalid weight or distance");
+  }
+
+  const output = weight * distance * 0.1;
+  res.send(output.toString()); // Send as string
 });
 
-
-app.get('/loyalty-points ', (req, res) => {
+app.get("/loyalty-points", (req, res) => {
   const purchaseAmount = parseFloat(req.query.purchaseAmount);
-  let output = purchaseAmount * loyalityRate;
-  res.send(output)
+
+  if (isNaN(purchaseAmount)) {
+    return res.status(400).send("Invalid purchase amount");
+  }
+
+  const output = purchaseAmount * loyaltyRate;
+  res.send(output.toString()); // Send as string
 });
-
-
-
-
-
-
-
-
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
