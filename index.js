@@ -19,7 +19,7 @@ app.get('/cart-total', (req, res) => {
 
 app.get('/membership-discount', (req, res) => {
   const cartTotal = parseFloat(req.query.cartTotal);
-  const isMember = req.query.isMember);
+  const isMember = req.query.isMember;
   let result;
   if (isMember === 'true'){
     result =  (cartTotal * .9).toString();
@@ -42,7 +42,7 @@ app.get('/estimate-delivery', (req, res) => {
   const distance = parseFloat(req.query.distance);
   let output;
   if (shippingMethod === 'Standard'){
-    output = (distance / 50;).toString();
+    output = (distance / 50).toString();
   }else if(shippingMethod === 'Express'){
     output=  (distance / 100).toString();
   }
